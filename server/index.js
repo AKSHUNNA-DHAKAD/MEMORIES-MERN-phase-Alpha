@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';  // Load dotenv
 import postRoutes from './routes/posts.js';
+import userRoutes from './routes/users.js'
 
 dotenv.config();  // Load environment variables
 
@@ -16,6 +17,8 @@ app.use(cors());
 
 // Routes
 app.use('/posts', postRoutes);
+app.use('/users', userRoutes);
+
 app.get('/', (req, res) => {
     res.send('Welcome to the MEMORIES APP')
 })

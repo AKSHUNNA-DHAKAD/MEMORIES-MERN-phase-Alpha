@@ -10,18 +10,19 @@ export const getPosts = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 }
+
 export const createPost = async (req, res) => {
     const post = req.body;
     // PostMessage is a model for postSchema 
-    const newPost = new PostMessage(post);
+
+    const newPost = new PostMessage({ ...post, creator: req.userId, createdAt: new Date().toISOString() });
 
     //  this line creates a new object for PostMessage using the data stored in this model
-    // this object is then stored into the constant named newPost .
+    // this object is then stored into the constant named newPost 
     try {
         await newPost.save();
         res.status(201).json(newPost);
-    }
-    catch (error) {
+    } catch (error) {
         res.status(409).json({ message: error.message });
     }
 }
@@ -71,11 +72,23 @@ export const deletePost = async (req, res) => {
     console.log('Controller code working');
 };
 
+//  * means below line is  this added later as as a part of  auth controller in step 37
 export const likePost = async (req, res) => {
     const { id } = req.params
+    // *
+    if (!req.userId) return res.json({ message: "UnAuthenticated" })
 
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send('NO Post with that id');
-    const post  = await PostMessage.findById(id);
-    const updatedPost = await PostMessage.findByIdAndUpdate(id,{likeCount : post.likeCount +1 },{new : true})
+    const post = await PostMessage.findById(id);
+    // *
+    const index = post.likes.findIndex((id) => id == String(req.userId));
+    // *
+    if (index === -1) {
+        post.likes.push(req.userId);
+    } else {
+        post.likes = post.likes.filter((id) => id != String(req.userId));
+    }
+    //* 
+    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true })
     res.json(updatedPost);
 }
